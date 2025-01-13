@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msvc-security
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: msvc-security
+  template:
+    metadata:
+      labels:
+        role: msvc-security
+    spec:
+      containers:
+        - name: msvc-security
+          image: kevinmitsi/security:latest
+          ports:
+            - containerPort: 9000
+          env:
+            - name: LB_USERS_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: msvc-user
+                  key: lb_user_uri
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: msvc-security
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  selector:
+    role: msvc-security

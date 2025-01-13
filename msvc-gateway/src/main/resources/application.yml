@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: msvc-cursos
+          uri: lb://msvc-cursos
+          predicates:
+            - Path=/api/v1/courses/**
+          filters: []
+        - id: user-microservice
+          uri: lb://user-microservice
+          predicates:
+            - Path=/api/v1/user/**
+          filters: []

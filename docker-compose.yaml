@@ -1,0 +1,85 @@
+services:
+
+  mysql8:
+    container_name: mysql8
+    image: mysql:8
+    ports:
+      - "3307:3306"
+    environment:
+        MYSQL_ROOT_PASSWORD: sasa
+        MYSQL_DATABASE: mcsv_user
+    volumes:
+      - data-mysql:/var/lib/mysql
+    networks:
+      - spring
+
+  postgres14:
+    container_name: postgres14
+    image: postgres:14-alpine
+    ports:
+      - "5433:5432"
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: sasa
+        POSTGRES_DB: msvc_cursos
+    volumes:
+      - data-postgres:/var/lib/postgresql/data
+    networks:
+      - spring
+
+  user-microservice:
+#    build:
+#      context: ./
+#      dockerfile: ./user-microservice/Dockerfile
+    container_name: user-microservice
+    image: kevinmitsi/users:latest
+    ports:
+      - "8932:8081"
+#    env_file:
+#      - ./user-microservice/.env
+    environment:
+      PORT: 8081
+      DB_HOST: mysql8:3306
+      DB_DATABASE: mcsv_user
+      DB_USERNAME: root
+      DB_PASSWORD: sasa
+      COURSE_URL: http://msvc-cursos:8082/api/v1/courses/
+    depends_on:
+      - mysql8
+    networks:
+      - spring
+    restart: always
+
+  msvc-cursos:
+#    build:
+#      context: ./
+#      dockerfile: ./msvc-cursos/Dockerfile
+    container_name: msvc-cursos
+    image: kevinmitsi/cursos:latest
+    ports:
+      - "8933:8082"
+#    env_file:
+#      - ./msvc-cursos/.env
+    environment:
+        PORT: 8082
+        DB_HOST: postgres14:5432
+        DB_DATABASE: msvc_cursos
+        DB_USERNAME: postgres
+        DB_PASSWORD: sasa
+    depends_on:
+      - postgres14
+    networks:
+      - spring
+    restart: always
+
+volumes:
+    data-mysql:
+      name: data-mysql
+      external: true
+    data-postgres:
+      name: data-postgres
+      external: true
+
+networks:
+    spring:
+
